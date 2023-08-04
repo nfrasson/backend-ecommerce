@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "backend-ecommerce-dev"
+s3_prefix = "backend-ecommerce-dev"
+region = "sa-east-1"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+resolve_s3 = true
+disable_rollback = false

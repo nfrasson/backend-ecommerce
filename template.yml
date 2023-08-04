@@ -1,0 +1,195 @@
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    CodeUri: "src/"
+    Timeout: 15
+    Architectures:
+      - arm64
+    Runtime: nodejs18.x
+    MemorySize: 256
+    Tracing: Active
+    VpcConfig:
+      SecurityGroupIds:
+        - sg-06e84fcad2a4f071c
+      SubnetIds:
+        - subnet-0fc76b80d7addeba4
+        - subnet-05ca999056ca43e7c
+        - subnet-07db8afacc85cbb73
+    Environment:
+      Variables:
+        DB_PROXY_ENDPOINT: "proxy-1690238013702-ecommerce-dev.proxy-cjwbfo9pv2ub.us-east-1.rds.amazonaws.com"
+        DB_PROXY_PORT: "3306"
+        DB_USERNAME: "ecommerce_dev"
+
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: API Gateway From Stack ${AWS::StackName}
+      StageName: !Ref Stage
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'*'"
+        AllowHeaders: "'content-type'"
+      # Auth:
+      #   Authorizers:
+      #     chatAuthorizer:
+      #       FunctionPayloadType: REQUEST
+      #       FunctionArn:
+      #         Fn::GetAtt:
+      #           - authorizer
+      #           - Arn
+      #       Identity:
+      #         Headers:
+      #           - Authorization
+
+  # authorizer:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub ${AWS::StackName}-authorizer
+  #     Handler: functions/Auth/authorizer.handler
+  #     Layers:
+  #       - !Ref LayerAuth
+  #     Policies:
+  #       - AmazonSSMReadOnlyAccess
+
+  getOffers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getOffers
+      Handler: serverless/functions/store/Offer/getOffers.handler
+      Layers:
+        - !Ref LayerCommon
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /offers
+            Method: GET
+            RestApiId: !Ref Api
+
+  createOffer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createOffer
+      Handler: serverless/functions/store/Offer/createOffer.handler
+      Layers:
+        - !Ref LayerCommon
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /offer
+            Method: POST
+            RestApiId: !Ref Api
+
+  readOffer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readOffer
+      Handler: serverless/functions/store/Offer/readOffer.handler
+      Layers:
+        - !Ref LayerCommon
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /offer/{OfferID}
+            Method: get
+            RestApiId: !Ref Api
+
+  deleteOffer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteOffer
+      Handler: serverless/functions/store/Offer/deleteOffer.handler
+      Layers:
+        - !Ref LayerCommon
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /offer/{OfferID}
+            Method: delete
+            RestApiId: !Ref Api
+
+  updateOffer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateOffer
+      Handler: serverless/functions/store/Offer/updateOffer.handler
+      Layers:
+        - !Ref LayerCommon
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /offer/{OfferID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  LayerCommon:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "${AWS::StackName}-layerCommon"
+      RetentionPolicy: Delete
+      ContentUri: layers/layerCommon/nodejs.zip
+      CompatibleRuntimes:
+        - nodejs18.x
+
+  # MyRDSProxy:
+  #   Type: 'AWS::RDS::DBProxy'
+  #   Properties:
+  #     DBProxyName: 'MyRDSProxy'
+  #     EngineFamily: 'MYSQL'
+  #     RoleArn: 'arn:aws:iam::123456789012:role/rds-proxy-role'
+  #     Auth:
+  #       - AuthScheme: 'SECRETS'
+  #         IAMAuth: 'DISABLED'
+  #         SecretArn: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret'
+  #     DebugLogging: false
+  #     IdleClientTimeout: 1800
+  #     RequireTLS: true
+  #     VpcSubnetIds:
+  #       - 'subnet-0fc76b80d7addeba4'
+  #       - 'subnet-05ca999056ca43e7c'
+  #       - 'subnet-07db8afacc85cbb73'
+  #     VpcSecurityGroupIds:
+  #       - 'sg-06e84fcad2a4f071c'
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    Description: Deployment stage
+    AllowedValues:
+      - dev
+      - hml
+      - prod
+  # InstanceTypeParameter:
+  #   Type: String
+  #   Default: t2.micro
+  #   AllowedValues:
+  #     - t2.micro
+  #     - m1.small
+  #     - m1.large
+  #   Description: Enter t2.micro, m1.small, or m1.large. Default is t2.micro.
+
+Outputs:
+  apiUrl:
+    Description: "API Endpoint"
+    Value: !Sub "POST https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"

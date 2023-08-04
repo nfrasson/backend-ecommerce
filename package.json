@@ -1,0 +1,15 @@
+{
+  "name": "my-own-ecommerce",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "deploy:prod": "sam deploy --parameter-overrides Stage=prod --stack-name backend-ecommerce-prod --s3-prefix backend-ecommerce-prod",
+    "deploy:hml": "sam deploy --parameter-overrides Stage=hml --stack-name backend-ecommerce-hml --s3-prefix backend-ecommerce-hml",
+    "deploy:dev": "sam deploy --parameter-overrides Stage=dev --stack-name backend-ecommerce-dev --s3-prefix backend-ecommerce-dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
