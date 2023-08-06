@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { Offer } from "../../../../commons/database/SQL/index.mjs";
+import { Product } from "../../../../commons/database/SQL/index.mjs";
 import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 
 const requestShape = Joi.object({
@@ -8,11 +8,11 @@ const requestShape = Joi.object({
 });
 
 export const handler = lambdaProcessor(async (body) => {
-  const offers = await Offer.findAll({
-    where: { OfferDeletedAt: null },
+  const products = await Product.findAll({
+    where: { ProductDeletedAt: null },
     offset: (body.page - 1) * body.perPage,
     limit: body.perPage,
   });
 
-  return { statusCode: 200, body: offers };
+  return { statusCode: 200, body: products };
 }, requestShape);

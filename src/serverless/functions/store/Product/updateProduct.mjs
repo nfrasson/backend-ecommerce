@@ -1,9 +1,6 @@
 import Joi from "joi";
-import {
-  generateUUID,
-  lambdaProcessor,
-} from "../../../../commons/utils/index.mjs";
 import { Product } from "../../../../commons/database/SQL/index.mjs";
+import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 
 const requestShape = Joi.object({
   ProductName: Joi.string().required(),
@@ -11,11 +8,16 @@ const requestShape = Joi.object({
   ProductImageURL: Joi.string().required(),
   ProductDescription: Joi.string().required(),
   ProductStockQuantity: Joi.number().integer().required(),
+  ProductID: Joi.string().guid({ version: "uuidv4" }).required(),
   ProductCategoryID: Joi.string().guid({ version: "uuidv4" }).required(),
 });
 
 export const handler = lambdaProcessor(async (body) => {
-  const product = await Product.create({ ...body, ProductID: generateUUID() });
+  const product = await Product.update(body, {
+    where: {
+      ProductID: body.ProductID,
+    },
+  });
 
-  return { statusCode: 201, body: product };
+  return { statusCode: 200, body: product };
 }, requestShape);

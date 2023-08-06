@@ -1,17 +1,17 @@
 import Joi from "joi";
-import { Offer } from "../../../../commons/database/SQL/index.mjs";
+import { Coupon } from "../../../../commons/database/SQL/index.mjs";
 import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 
 const requestShape = Joi.object({
-  OfferID: Joi.string().guid({ version: "uuidv4" }).required(),
+  CouponID: Joi.string().guid({ version: "uuidv4" }).required(),
 });
 
 export const handler = lambdaProcessor(async (body) => {
-  await Offer.update(
-    { OfferDeletedAt: new Date() },
+  await Coupon.update(
+    { CouponDeletedAt: new Date() },
     {
       where: {
-        OfferID: body.OfferID,
+        CouponID: body.CouponID,
       },
     }
   );

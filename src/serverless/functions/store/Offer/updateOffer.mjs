@@ -1,21 +1,13 @@
 import Joi from "joi";
 import { Offer } from "../../../../commons/database/SQL/index.mjs";
-import {
-  lambdaProcessor,
-} from "../../../../commons/utils/index.mjs";
+import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 
-const requestBody = Joi.object({
-  OfferID: Joi.string()
-    .guid({
-      version: "uuidv4",
-    })
-    .required(),
-  ProductID: Joi.string()
-    .guid({
-      version: "uuidv4",
-    })
-    .required(),
+const requestShape = Joi.object({
+  OfferValidUntil: Joi.date().required(),
   OfferDescription: Joi.string().required(),
+  OfferCouponID: Joi.string().guid({ version: "uuidv4" }),
+  OfferID: Joi.string().guid({ version: "uuidv4" }).required(),
+  OfferProductID: Joi.string().guid({ version: "uuidv4" }).required(),
 });
 
 export const handler = lambdaProcessor(async (body) => {
@@ -26,5 +18,4 @@ export const handler = lambdaProcessor(async (body) => {
   });
 
   return { statusCode: 200, body: offer };
-}, requestBody);
-  
+}, requestShape);

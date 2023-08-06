@@ -6,9 +6,10 @@ export function errorHandler(error) {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true,
     },
-    error: JSON.stringify(
+    body: JSON.stringify(
       {
-        data: error,
+        status: false,
+        error,
       },
       null,
       2

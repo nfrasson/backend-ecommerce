@@ -7,24 +7,21 @@ const User = sequelize.define(
     UserID: {
       type: DataTypes.UUID,
       primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
     },
-    Name: {
-      type: DataTypes.STRING,
-    },
-    Email: {
+    UserName: DataTypes.STRING,
+    UserEmail: {
       type: DataTypes.STRING,
       validate: {
         isEmail: true,
       },
     },
-    PasswordHash: {
-      type: DataTypes.STRING,
-    },
-    Address: {
-      type: DataTypes.STRING,
-    },
-    Phone: {
-      type: DataTypes.STRING,
+    UserPasswordHash: DataTypes.STRING,
+    UserAddress: DataTypes.STRING,
+    UserPhone: DataTypes.STRING,
+    UserDeletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

@@ -1,27 +1,26 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../connectDatabase.mjs";
 
-const Offer = sequelize.define(
-  "Offer",
+const CartItem = sequelize.define(
+  "CartItem",
   {
-    OfferID: {
+    CartItemID: {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
-    OfferProductID: DataTypes.UUID,
-    OfferDescription: DataTypes.TEXT,
-    OfferCouponID: DataTypes.UUID,
-    OfferValidUntil: DataTypes.DATEONLY,
-    OfferDeletedAt: {
+    CartItemCartID: DataTypes.UUID,
+    CartItemProductID: DataTypes.UUID,
+    CartItemQuantity: DataTypes.INTEGER,
+    CartItemDeletedAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },
   },
   {
     timestamps: false,
-    tableName: "Offers",
+    tableName: "CartItems",
   }
 );
 
-export default Offer;
+export default CartItem;

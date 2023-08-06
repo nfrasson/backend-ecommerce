@@ -5,14 +5,14 @@ export function returnHandler({ statusCode, body }) {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true,
     },
-    ...(body && {
-      body: JSON.stringify(
-        {
-          data: body,
-        },
-        null,
-        2
-      ),
-    }),
+
+    body: JSON.stringify(
+      {
+        status: true,
+        data: body || {},
+      },
+      null,
+      2
+    ),
   };
 }

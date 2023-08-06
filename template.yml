@@ -10,24 +10,27 @@ Globals:
     Runtime: nodejs18.x
     MemorySize: 256
     Tracing: Active
+    Layers:
+      - !Ref LayerCommon
     VpcConfig:
       SecurityGroupIds:
-        - sg-06e84fcad2a4f071c
+        - sg-0f4d39fd0cab6148b
       SubnetIds:
-        - subnet-0fc76b80d7addeba4
-        - subnet-05ca999056ca43e7c
-        - subnet-07db8afacc85cbb73
+        - subnet-0a65bf24dca2b0528
+        - subnet-08a0954568e6a1fa9
+        - subnet-0c0bc88ea28b07f84
     Environment:
       Variables:
-        DB_PROXY_ENDPOINT: "proxy-1690238013702-ecommerce-dev.proxy-cjwbfo9pv2ub.us-east-1.rds.amazonaws.com"
         DB_PROXY_PORT: "3306"
         DB_USERNAME: "ecommerce_dev"
+        DB_PASSWORD: !Sub "{{resolve:ssm:ECOMMERCE_DEV_PASSWORD}}"
+        DB_PROXY_ENDPOINT: !Sub "{{resolve:ssm:ECOMMERCE_DEV_PROXY_ENDPOINT}}"
 
 Resources:
   Api:
     Type: AWS::Serverless::Api
     Properties:
-      Name: API Gateway From Stack ${AWS::StackName}
+      Name: !Sub ${AWS::StackName}-API
       StageName: !Ref Stage
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
@@ -57,20 +60,19 @@ Resources:
   #     Policies:
   #       - AmazonSSMReadOnlyAccess
 
+  # Offer Endpoints
   getOffers:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-getOffers
-      Handler: serverless/functions/store/Offer/getOffers.handler
-      Layers:
-        - !Ref LayerCommon
+      Handler: serverless/functions/Store/Offer/getOffers.handler
       Policies:
         - AmazonSSMReadOnlyAccess
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /offers
+            Path: /store/offers
             Method: GET
             RestApiId: !Ref Api
 
@@ -78,16 +80,14 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-createOffer
-      Handler: serverless/functions/store/Offer/createOffer.handler
-      Layers:
-        - !Ref LayerCommon
+      Handler: serverless/functions/Store/Offer/createOffer.handler
       Policies:
         - AmazonSSMReadOnlyAccess
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /offer
+            Path: /store/offer
             Method: POST
             RestApiId: !Ref Api
 
@@ -95,50 +95,656 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-readOffer
-      Handler: serverless/functions/store/Offer/readOffer.handler
-      Layers:
-        - !Ref LayerCommon
+      Handler: serverless/functions/Store/Offer/readOffer.handler
       Policies:
         - AmazonSSMReadOnlyAccess
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /offer/{OfferID}
-            Method: get
+            Path: /store/offer/{OfferID}
+            Method: GET
             RestApiId: !Ref Api
 
   deleteOffer:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-deleteOffer
-      Handler: serverless/functions/store/Offer/deleteOffer.handler
-      Layers:
-        - !Ref LayerCommon
+      Handler: serverless/functions/Store/Offer/deleteOffer.handler
       Policies:
         - AmazonSSMReadOnlyAccess
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /offer/{OfferID}
-            Method: delete
+            Path: /store/offer/{OfferID}
+            Method: DELETE
             RestApiId: !Ref Api
 
   updateOffer:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-updateOffer
-      Handler: serverless/functions/store/Offer/updateOffer.handler
-      Layers:
-        - !Ref LayerCommon
+      Handler: serverless/functions/Store/Offer/updateOffer.handler
       Policies:
         - AmazonSSMReadOnlyAccess
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /offer/{OfferID}
+            Path: /store/offer/{OfferID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # Product Endpoints
+  getProducts:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getProducts
+      Handler: serverless/functions/Store/Product/getProducts.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/products
+            Method: GET
+            RestApiId: !Ref Api
+
+  createProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createProduct
+      Handler: serverless/functions/Store/Product/createProduct.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/product
+            Method: POST
+            RestApiId: !Ref Api
+
+  readProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readProduct
+      Handler: serverless/functions/Store/Product/readProduct.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/product/{ProductID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteProduct
+      Handler: serverless/functions/Store/Product/deleteProduct.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/product/{ProductID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateProduct
+      Handler: serverless/functions/Store/Product/updateProduct.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/product/{ProductID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # ProductCategory Endpoints
+  getProductCategories:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getProductCategories
+      Handler: serverless/functions/Store/ProductCategory/getProductCategories.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/productCategories
+            Method: GET
+            RestApiId: !Ref Api
+
+  createProductCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createProductCategory
+      Handler: serverless/functions/Store/ProductCategory/createProductCategory.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/productCategory
+            Method: POST
+            RestApiId: !Ref Api
+
+  readProductCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readProductCategory
+      Handler: serverless/functions/Store/ProductCategory/readProductCategory.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/productCategory/{CategoryID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteProductCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteProductCategory
+      Handler: serverless/functions/Store/ProductCategory/deleteProductCategory.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/productCategory/{CategoryID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateProductCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateProductCategory
+      Handler: serverless/functions/Store/ProductCategory/updateProductCategory.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/productCategory/{CategoryID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # Carts Endpoints
+  getCarts:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getCarts
+      Handler: serverless/functions/Store/Cart/getCarts.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/carts
+            Method: GET
+            RestApiId: !Ref Api
+
+  createCart:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createCart
+      Handler: serverless/functions/Store/Cart/createCart.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cart
+            Method: POST
+            RestApiId: !Ref Api
+
+  readCart:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readCart
+      Handler: serverless/functions/Store/Cart/readCart.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cart/{CartID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteCart:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteCart
+      Handler: serverless/functions/Store/Cart/deleteCart.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cart/{CartID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateCart:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateCart
+      Handler: serverless/functions/Store/Cart/updateCart.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cart/{CartID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # CartItems Endpoints
+  getCartItems:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getCartItems
+      Handler: serverless/functions/Store/CartItem/getCartItems.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cartItems
+            Method: GET
+            RestApiId: !Ref Api
+
+  createCartItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createCartItem
+      Handler: serverless/functions/Store/CartItem/createCartItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cartItem
+            Method: POST
+            RestApiId: !Ref Api
+
+  readCartItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readCartItem
+      Handler: serverless/functions/Store/CartItem/readCartItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cartItem/{CartItemID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteCartItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteCartItem
+      Handler: serverless/functions/Store/CartItem/deleteCartItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cartItem/{CartItemID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateCartItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateCartItem
+      Handler: serverless/functions/Store/CartItem/updateCartItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/cartItem/{CartItemID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # Coupon Endpoints
+  getCoupons:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getCoupons
+      Handler: serverless/functions/Store/Coupon/getCoupons.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/coupons
+            Method: GET
+            RestApiId: !Ref Api
+
+  createCoupon:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createCoupon
+      Handler: serverless/functions/Store/Coupon/createCoupon.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/coupon
+            Method: POST
+            RestApiId: !Ref Api
+
+  readCoupon:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readCoupon
+      Handler: serverless/functions/Store/Coupon/readCoupon.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/coupon/{CouponID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteCoupon:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteCoupon
+      Handler: serverless/functions/Store/Coupon/deleteCoupon.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/coupon/{CouponID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateCoupon:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateCoupon
+      Handler: serverless/functions/Store/Coupon/updateCoupon.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/coupon/{CouponID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # Order Endpoints
+  getOrders:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getOrders
+      Handler: serverless/functions/Store/Order/getOrders.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/orders
+            Method: GET
+            RestApiId: !Ref Api
+
+  createOrder:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createOrder
+      Handler: serverless/functions/Store/Order/createOrder.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/order
+            Method: POST
+            RestApiId: !Ref Api
+
+  readOrder:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readOrder
+      Handler: serverless/functions/Store/Order/readOrder.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/order/{OrderID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteOrder:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteOrder
+      Handler: serverless/functions/Store/Order/deleteOrder.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/order/{OrderID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateOrder:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateOrder
+      Handler: serverless/functions/Store/Order/updateOrder.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/order/{OrderID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # OrderItem Endpoints
+  getOrderItems:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getOrderItems
+      Handler: serverless/functions/Store/OrderItem/getOrderItems.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/orderItems
+            Method: GET
+            RestApiId: !Ref Api
+
+  createOrderItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-createOrderItem
+      Handler: serverless/functions/Store/OrderItem/createOrderItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/orderItem
+            Method: POST
+            RestApiId: !Ref Api
+
+  readOrderItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readOrderItem
+      Handler: serverless/functions/Store/OrderItem/readOrderItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/orderItem/{OrderItemID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteOrderItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteOrderItem
+      Handler: serverless/functions/Store/OrderItem/deleteOrderItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/orderItem/{OrderItemID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateOrderItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateOrderItem
+      Handler: serverless/functions/Store/OrderItem/updateOrderItem.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /store/orderItem/{OrderItemID}
+            Method: PATCH
+            RestApiId: !Ref Api
+
+  # User Endpoints
+  getUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-getUsers
+      Handler: serverless/functions/User/getUsers.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: GET
+            RestApiId: !Ref Api
+
+  registerUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-registerUser
+      Handler: serverless/functions/User/registerUser.handler
+      Layers:
+        - !Ref LayerUser
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /user/register
+            Method: POST
+            RestApiId: !Ref Api
+
+  readUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-readUser
+      Handler: serverless/functions/User/readUser.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /user/{UserID}
+            Method: GET
+            RestApiId: !Ref Api
+
+  deleteUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-deleteUser
+      Handler: serverless/functions/User/deleteUser.handler
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /user/{UserID}
+            Method: DELETE
+            RestApiId: !Ref Api
+
+  updateUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-updateUser
+      Handler: serverless/functions/User/updateUser.handler
+      Layers:
+        - !Ref LayerUser
+      Policies:
+        - AmazonSSMReadOnlyAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /user/{UserID}
             Method: PATCH
             RestApiId: !Ref Api
 
@@ -151,25 +757,14 @@ Resources:
       CompatibleRuntimes:
         - nodejs18.x
 
-  # MyRDSProxy:
-  #   Type: 'AWS::RDS::DBProxy'
-  #   Properties:
-  #     DBProxyName: 'MyRDSProxy'
-  #     EngineFamily: 'MYSQL'
-  #     RoleArn: 'arn:aws:iam::123456789012:role/rds-proxy-role'
-  #     Auth:
-  #       - AuthScheme: 'SECRETS'
-  #         IAMAuth: 'DISABLED'
-  #         SecretArn: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret'
-  #     DebugLogging: false
-  #     IdleClientTimeout: 1800
-  #     RequireTLS: true
-  #     VpcSubnetIds:
-  #       - 'subnet-0fc76b80d7addeba4'
-  #       - 'subnet-05ca999056ca43e7c'
-  #       - 'subnet-07db8afacc85cbb73'
-  #     VpcSecurityGroupIds:
-  #       - 'sg-06e84fcad2a4f071c'
+  LayerUser:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "${AWS::StackName}-layerUser"
+      RetentionPolicy: Delete
+      ContentUri: layers/layerUser/nodejs.zip
+      CompatibleRuntimes:
+        - nodejs18.x
 
 Parameters:
   Stage:
@@ -180,14 +775,6 @@ Parameters:
       - dev
       - hml
       - prod
-  # InstanceTypeParameter:
-  #   Type: String
-  #   Default: t2.micro
-  #   AllowedValues:
-  #     - t2.micro
-  #     - m1.small
-  #     - m1.large
-  #   Description: Enter t2.micro, m1.small, or m1.large. Default is t2.micro.
 
 Outputs:
   apiUrl:
