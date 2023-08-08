@@ -1,12 +1,9 @@
-export function mergeBody({
-  body = {},
-  pathParameters = {},
-  queryStringParameters = {},
-}) {
-  return Object.assign(
-    {},
-    pathParameters,
-    queryStringParameters,
-    typeof body === "string" ? JSON.parse(body) : body
-  );
+export function mergeBody(event) {
+  const { body = {}, pathParameters = {}, queryStringParameters = {} } = event;
+
+  return {
+    ...pathParameters,
+    ...queryStringParameters,
+    ...(typeof body === "string" ? JSON.parse(body) : body),
+  };
 }
