@@ -1,8 +1,6 @@
 import Joi from "joi";
-import {
-  generateUUID,
-  lambdaProcessor,
-} from "../../../../commons/utils/index.mjs";
+import { randomUUID } from "node:crypto";
+import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 import { Offer } from "../../../../commons/database/SQL/index.mjs";
 
 const requestShape = Joi.object({
@@ -13,7 +11,7 @@ const requestShape = Joi.object({
 });
 
 export const handler = lambdaProcessor(async (body) => {
-  const offer = await Offer.create({ ...body, OfferID: generateUUID() });
+  const offer = await Offer.create({ ...body, OfferID: randomUUID() });
 
   return { statusCode: 201, body: offer };
 }, requestShape);
