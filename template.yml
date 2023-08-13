@@ -21,6 +21,7 @@ Globals:
         - subnet-0c0bc88ea28b07f84
     Environment:
       Variables:
+        STAGE: !Ref Stage
         DB_PROXY_PORT: "3306"
         DB_USERNAME: "ecommerce_dev"
         DB_PASSWORD: !Sub "{{resolve:ssm:ECOMMERCE_DEV_PASSWORD}}"
@@ -772,6 +773,8 @@ Parameters:
     Default: dev
     Description: Deployment stage
     AllowedValues:
+      - unit:test
+      - integration:test
       - dev
       - hml
       - prod

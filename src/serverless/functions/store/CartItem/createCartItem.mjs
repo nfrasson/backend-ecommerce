@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { randomUUID } from "node:crypto";
+import crypto from "node:crypto";
 import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 import { CartItem } from "../../../../commons/database/SQL/index.mjs";
 
@@ -12,7 +12,7 @@ const requestShape = Joi.object({
 export const handler = lambdaProcessor(async (body) => {
   const cartItem = await CartItem.create({
     ...body,
-    CartItemID: randomUUID(),
+    CartItemID: crypto.randomUUID(),
   });
 
   return { statusCode: 201, body: cartItem };

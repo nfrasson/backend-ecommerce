@@ -1,4 +1,4 @@
-import { returnHandler, errorHandler, mergeBody } from "./index.mjs";
+import { returnHandler, mergeBody } from "./index.mjs";
 
 export function lambdaProcessor(processFunction, requestShape) {
   return async (event) => {
@@ -11,7 +11,12 @@ export function lambdaProcessor(processFunction, requestShape) {
 
       return returnHandler(processResult);
     } catch (error) {
-      return errorHandler(error);
+      console.error("EXECUTION_FAILED", error);
+      return returnHandler({
+        statusCode: 500,
+        body: error.message,
+        status: false,
+      }); // To-do mock default error status code and messages
     }
   };
 }

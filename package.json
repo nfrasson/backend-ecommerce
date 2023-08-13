@@ -1,5 +1,5 @@
 {
-  "name": "my-own-ecommerce",
+  "name": "backend-ecommerce",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,12 +7,23 @@
   "scripts": {
     "deploy:prod": "sam deploy --parameter-overrides Stage=prod --stack-name backend-ecommerce-prod --s3-prefix backend-ecommerce-prod",
     "deploy:hml": "sam deploy --parameter-overrides Stage=hml --stack-name backend-ecommerce-hml --s3-prefix backend-ecommerce-hml",
-    "deploy:dev": "sam deploy --parameter-overrides Stage=dev --stack-name backend-ecommerce-dev --s3-prefix backend-ecommerce-dev"
+    "deploy:dev": "sam deploy --parameter-overrides Stage=dev --stack-name backend-ecommerce-dev --s3-prefix backend-ecommerce-dev",
+    "test:dev": "node --watch --test __tests__/",
+    "test": "node --test __tests__/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@aws-sdk/client-lambda": "^3.385.0"
+  "engines": {
+    "node": "20.5.1"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "^3.385.0",
+    "bcryptjs": "^2.4.3",
+    "joi": "^17.9.2",
+    "mysql2": "^3.6.0",
+    "sequelize": "^6.32.1",
+    "sinon": "^15.2.0",
+    "sqlite3": "^5.1.6"
   }
 }

@@ -1,8 +1,8 @@
+import crypto from "node:crypto";
 import Joi from "joi";
 import bcrypt from "bcryptjs";
-import { randomUUID } from "node:crypto";
-import { lambdaProcessor } from "../../../commons/utils/index.mjs";
 import { User } from "../../../commons/database/SQL/index.mjs";
+import { lambdaProcessor } from "../../../commons/utils/index.mjs";
 
 const requestShape = Joi.object({
   UserName: Joi.string().required(),
@@ -17,7 +17,7 @@ export const handler = lambdaProcessor(async (body) => {
 
   const user = {
     ...userData,
-    UserID: randomUUID(),
+    UserID: crypto.randomUUID(),
     UserPasswordHash: await bcrypt.hash(UserPassword, 10),
   };
 

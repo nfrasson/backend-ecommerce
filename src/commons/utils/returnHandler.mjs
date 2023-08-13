@@ -1,15 +1,14 @@
-export function returnHandler({ statusCode, body }) {
+export function returnHandler({ statusCode, body, status }) {
   return {
     statusCode,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true,
     },
-
     body: JSON.stringify(
       {
-        status: true,
-        data: body || {},
+        status,
+        data: body ?? {},
       },
       null,
       2
