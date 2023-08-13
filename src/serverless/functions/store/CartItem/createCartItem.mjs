@@ -1,7 +1,7 @@
 import Joi from "joi";
 import crypto from "node:crypto";
 import { CartItem } from "../../../../commons/database/SQL/index.mjs";
-import { lambdaProcessor, Logger } from "../../../commons/utils/index.mjs";
+import { lambdaProcessor, Logger } from "../../../../commons/utils/index.mjs";
 
 const $logger = new Logger("ecommerce:Store:createCartItem");
 

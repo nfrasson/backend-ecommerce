@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { Offer } from "../../../../commons/database/SQL/index.mjs";
-import { lambdaProcessor, Logger } from "../../../commons/utils/index.mjs";
+import { lambdaProcessor, Logger } from "../../../../commons/utils/index.mjs";
 
 const $logger = new Logger("ecommerce:Store:readOffer");
 
