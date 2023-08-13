@@ -1,7 +1,9 @@
 import Joi from "joi";
 import crypto from "node:crypto";
-import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 import { Product } from "../../../../commons/database/SQL/index.mjs";
+import { lambdaProcessor, Logger } from "../../../commons/utils/index.mjs";
+
+const $logger = new Logger("ecommerce:Store:createProduct");
 
 const requestShape = Joi.object({
   ProductName: Joi.string().required(),
@@ -12,11 +14,15 @@ const requestShape = Joi.object({
   ProductCategoryID: Joi.string().guid({ version: "uuidv4" }).required(),
 });
 
-export const handler = lambdaProcessor(async (body) => {
-  const product = await Product.create({
-    ...body,
-    ProductID: crypto.randomUUID(),
-  });
+export const handler = lambdaProcessor(
+  async (body) => {
+    const product = await Product.create({
+      ...body,
+      ProductID: crypto.randomUUID(),
+    });
 
-  return { statusCode: 201, body: product };
-}, requestShape);
+    return { statusCode: 201, body: product };
+  },
+  requestShape,
+  $logger
+);

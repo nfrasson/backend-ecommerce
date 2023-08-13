@@ -1,7 +1,9 @@
 import Joi from "joi";
 import crypto from "node:crypto";
-import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
 import { Offer } from "../../../../commons/database/SQL/index.mjs";
+import { lambdaProcessor, Logger } from "../../../commons/utils/index.mjs";
+
+const $logger = new Logger("ecommerce:Store:createOffer");
 
 const requestShape = Joi.object({
   OfferValidUntil: Joi.date().required(),
@@ -10,8 +12,12 @@ const requestShape = Joi.object({
   OfferProductID: Joi.string().guid({ version: "uuidv4" }).required(),
 });
 
-export const handler = lambdaProcessor(async (body) => {
-  const offer = await Offer.create({ ...body, OfferID: crypto.randomUUID() });
+export const handler = lambdaProcessor(
+  async (body) => {
+    const offer = await Offer.create({ ...body, OfferID: crypto.randomUUID() });
 
-  return { statusCode: 201, body: offer };
-}, requestShape);
+    return { statusCode: 201, body: offer };
+  },
+  requestShape,
+  $logger
+);

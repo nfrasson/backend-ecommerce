@@ -1,6 +1,8 @@
 import Joi from "joi";
 import { Order } from "../../../../commons/database/SQL/index.mjs";
-import { lambdaProcessor } from "../../../../commons/utils/index.mjs";
+import { lambdaProcessor, Logger } from "../../../commons/utils/index.mjs";
+
+const $logger = new Logger("ecommerce:Store:updateOrder");
 
 const requestShape = Joi.object({
   OrderDate: Joi.date().required(),
@@ -10,12 +12,16 @@ const requestShape = Joi.object({
   OrderStatus: Joi.string().valid("Pending", "Shipped", "Delivered").required(),
 });
 
-export const handler = lambdaProcessor(async (body) => {
-  const order = await Order.update(body, {
-    where: {
-      OrderID: body.OrderID,
-    },
-  });
+export const handler = lambdaProcessor(
+  async (body) => {
+    const order = await Order.update(body, {
+      where: {
+        OrderID: body.OrderID,
+      },
+    });
 
-  return { statusCode: 200, body: order };
-}, requestShape);
+    return { statusCode: 200, body: order };
+  },
+  requestShape,
+  $logger
+);

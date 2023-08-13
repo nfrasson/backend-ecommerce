@@ -1,21 +1,23 @@
 import { returnHandler, mergeBody } from "./index.mjs";
 
-export function lambdaProcessor(processFunction, requestShape) {
+export function lambdaProcessor(processFunction, requestShape, $logger) {
   return async (event) => {
-    console.debug("EVENT", { event });
     try {
+      $logger.debug("EVENT", { event });
+
       const body = await requestShape.validateAsync(mergeBody(event));
+      $logger.info("VALITED_BODY", { body });
 
       const processResult = await processFunction(body);
-      console.debug("PROCESS_RESULT", { processResult });
+      $logger.info("PROCESS_RESULT", { processResult });
 
-      return returnHandler(processResult);
+      return returnHandler({ ...processResult, status: true });
     } catch (error) {
-      console.error("EXECUTION_FAILED", error);
+      $logger.error("EXECUTION_FAILED", error);
       return returnHandler({
+        status: false,
         statusCode: 500,
         body: error.message,
-        status: false,
       }); // To-do mock default error status code and messages
     }
   };
