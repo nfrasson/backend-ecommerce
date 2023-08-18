@@ -1,5 +1,3 @@
-import assert from "node:assert";
-
 export function assertResponse(
   result,
   expectedStatusCode,
@@ -11,17 +9,14 @@ export function assertResponse(
     expectedStatusCode >= 200 && expectedStatusCode < 300
   );
 
-  assert.strictEqual(
-    result.statusCode,
-    expectedStatusCode,
-    "Unexpected status code"
-  );
-  assert.strictEqual(parsedBody.status, expectedStatus, "Unexpected status");
+  // Use Jest's expect function to check that the status codes are equal
+  expect(result.statusCode).toBe(expectedStatusCode);
+
+  // Use Jest's expect function to check that the statuses are equal
+  expect(parsedBody.status).toBe(expectedStatus);
+
+  // If mockResponse is provided, use Jest's expect function to check that the data in the response is as expected
   if (mockResponse) {
-    assert.deepStrictEqual(
-      parsedBody.data,
-      mockResponse,
-      "Unexpected response data"
-    );
+    expect(parsedBody.data).toEqual(mockResponse);
   }
 }

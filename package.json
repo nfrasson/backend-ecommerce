@@ -8,8 +8,7 @@
     "deploy:prod": "sam deploy --parameter-overrides Stage=prod --stack-name backend-ecommerce-prod --s3-prefix backend-ecommerce-prod",
     "deploy:hml": "sam deploy --parameter-overrides Stage=hml --stack-name backend-ecommerce-hml --s3-prefix backend-ecommerce-hml",
     "deploy:dev": "sam deploy --parameter-overrides Stage=dev --stack-name backend-ecommerce-dev --s3-prefix backend-ecommerce-dev",
-    "test:dev": "node --watch --test __tests__/",
-    "test": "node --test __tests__/"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +18,9 @@
   },
   "devDependencies": {
     "@aws-sdk/client-lambda": "^3.385.0",
+    "@babel/preset-env": "^7.22.10",
     "bcryptjs": "^2.4.3",
+    "jest": "^29.6.2",
     "joi": "^17.9.2",
     "mysql2": "^3.6.0",
     "sequelize": "^6.32.1",
