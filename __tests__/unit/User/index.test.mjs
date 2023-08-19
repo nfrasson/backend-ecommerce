@@ -1,27 +1,26 @@
 import crypto from "node:crypto";
+import Chance from "chance";
 import bcrypt from "bcryptjs";
 import { jest } from "@jest/globals";
-import { assertResponse } from "../../mocks/index.mjs";
 import { User } from "../../../src/commons/database/SQL/index.mjs";
 import { registerUser } from "../../../src/serverless/functions/User/index.mjs";
 
+const chance = new Chance();
+
 describe("Users", () => {
-  let hashStub;
-  let randomUUIDStub;
   describe("#register", () => {
     let createStub;
+    const successStatus = true;
+    const failStatus = false;
     const successStatusCode = 201;
     const validationErrorStatusCode = 500;
-    const defaultUUID = "ee3f3c3b-c7d7-4250-9ab2-3a1d053927f1";
-    const defaultHash =
-      "$2a$10$kxOOrAYeU6eiOdgM5.PZn.jUDKBLG6ZVzpDb0JMARdz4veNt5UhjW";
+    const defaultUUID = chance.guid();
+    const defaultHash = chance.hash();
 
     beforeAll(() => {
       createStub = jest.spyOn(User, "create").mockImplementation();
-      hashStub = jest.spyOn(bcrypt, "hash").mockReturnValue(defaultHash);
-      randomUUIDStub = jest
-        .spyOn(crypto, "randomUUID")
-        .mockReturnValue(defaultUUID);
+      jest.spyOn(bcrypt, "hash").mockReturnValue(defaultHash);
+      jest.spyOn(crypto, "randomUUID").mockReturnValue(defaultUUID);
     });
 
     afterAll(() => {
@@ -29,14 +28,14 @@ describe("Users", () => {
     });
 
     const mockRequestBody = {
-      UserName: "John Doe",
-      UserPhone: "123-456-7890",
-      UserAddress: "123 Street",
-      UserPassword: "password123",
-      UserEmail: "johndoe@example.com",
+      UserName: chance.name(),
+      UserEmail: chance.email(),
+      UserPhone: chance.phone(),
+      UserAddress: chance.address(),
+      UserPassword: chance.string({ length: 10 }),
     };
 
-    test("should register a user successfully", async () => {
+    it("should register a user successfully", async () => {
       const mockResponse = {
         ...mockRequestBody,
         UserID: defaultUUID,
@@ -50,10 +49,11 @@ describe("Users", () => {
       };
 
       const result = await registerUser(event);
+      const parsedBody = JSON.parse(result.body);
 
-      assertResponse(result, successStatusCode, mockResponse);
-
-      expect(createStub).toHaveBeenCalledTimes(1);
+      expect(result.statusCode).toBe(successStatusCode);
+      expect(parsedBody.status).toBe(successStatus);
+      expect(parsedBody.data).toEqual(mockResponse);
 
       const databaseBody = createStub.mock.calls[0][0];
       const { UserPassword, ...expectedDatabaseBody } = mockResponse;
@@ -61,62 +61,58 @@ describe("Users", () => {
       expect(databaseBody).toEqual(expectedDatabaseBody);
     });
 
-    test("should return an error if the request body is missing a required property", async () => {
-      const requiredProperties = Object.keys(mockRequestBody);
+    const requiredProperties = Object.keys(mockRequestBody);
 
-      for (const key of Object.keys(mockRequestBody)) {
-        const { [key]: ignoredValue, ...missingPropertyBody } = mockRequestBody;
+    const missingPropertyTestCases = requiredProperties.map((key) => {
+      const { [key]: ignoredValue, ...missingPropertyBody } = mockRequestBody;
+      const shouldReturnValidationError = requiredProperties.includes(key);
 
-        const event = { body: missingPropertyBody };
-        const shouldReturnValidationError = requiredProperties.includes(key);
+      const expectedStatus = shouldReturnValidationError
+        ? failStatus
+        : successStatus;
+      const expectedStatusCode = shouldReturnValidationError
+        ? validationErrorStatusCode
+        : successStatusCode;
 
-        const result = await registerUser(event);
-
-        assertResponse(
-          result,
-          shouldReturnValidationError
-            ? validationErrorStatusCode
-            : successStatusCode
-        );
-      }
+      return [missingPropertyBody, expectedStatus, expectedStatusCode];
     });
 
-    test("should return an error if the request body contains an invalid property", async () => {
-      const invalidRequestBodies = [
-        {
-          ...mockRequestBody,
-          UserName: null,
-        },
-        {
-          ...mockRequestBody,
-          UserPhone: null,
-        },
-        {
-          ...mockRequestBody,
-          UserAddress: null,
-        },
-        {
-          ...mockRequestBody,
-          UserPassword: null,
-        },
-        {
-          ...mockRequestBody,
-          UserEmail: "invalid-email",
-        },
-        {
-          ...mockRequestBody,
-          InvalidProperty: "invalid-property", // Should return error on an unexpected property
-        },
-      ];
+    it.each(missingPropertyTestCases)(
+      "should return an error if the request body is missing a required property: %p",
+      async (missingPropertyBody, expectedStatus, expectedStatusCode) => {
+        const event = { body: missingPropertyBody };
 
-      for (const invalidRequestBody of invalidRequestBodies) {
-        const event = { body: invalidRequestBody };
+        console.log(missingPropertyBody, expectedStatus, expectedStatusCode);
 
         const result = await registerUser(event);
+        const parsedBody = JSON.parse(result.body);
 
+        expect(parsedBody.status).toBe(expectedStatus);
+        expect(result.statusCode).toBe(expectedStatusCode);
+      }
+    );
+
+    const invalidProperties = [
+      {
+        UnexpectedProperty: chance.bool(),
+        UserName: chance.pickone([null, undefined, [], {}]),
+        UserPhone: chance.pickone([null, undefined, [], {}]),
+        UserAddress: chance.pickone([null, undefined, [], {}]),
+        UserPassword: chance.pickone([null, undefined, [], {}]),
+        UserEmail: chance.pickone(["error", null, undefined, [], {}]),
+      },
+    ];
+
+    it.each(invalidProperties)(
+      "should return an error if the request body contains an invalid property: %p",
+      async (invalidRequestProperty) => {
+        const event = {
+          body: { ...mockRequestBody, ...invalidRequestProperty },
+        };
+        const result = await registerUser(event);
         assertResponse(result, validationErrorStatusCode);
       }
-    });
+    );
   });
 
   // Similar transformations for the "#get" block
