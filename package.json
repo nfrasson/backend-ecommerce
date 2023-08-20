@@ -8,7 +8,9 @@
     "deploy:prod": "sam deploy --parameter-overrides Stage=prod --stack-name backend-ecommerce-prod --s3-prefix backend-ecommerce-prod",
     "deploy:hml": "sam deploy --parameter-overrides Stage=hml --stack-name backend-ecommerce-hml --s3-prefix backend-ecommerce-hml",
     "deploy:dev": "sam deploy --parameter-overrides Stage=dev --stack-name backend-ecommerce-dev --s3-prefix backend-ecommerce-dev",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js /__tests__/unit",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js /__tests__/integration",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "keywords": [],
   "author": "",

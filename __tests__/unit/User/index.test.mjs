@@ -3,19 +3,20 @@ import Chance from "chance";
 import bcrypt from "bcryptjs";
 import { jest } from "@jest/globals";
 import { User } from "../../../src/commons/database/SQL/index.mjs";
+import generateTestCases from "../../utils/generateTestCases.mjs";
 import { registerUser } from "../../../src/serverless/functions/User/index.mjs";
 
 const chance = new Chance();
 
 describe("Users", () => {
   describe("#register", () => {
-    let createStub;
-    const successStatus = true;
-    const failStatus = false;
     const successStatusCode = 201;
     const validationErrorStatusCode = 500;
+
     const defaultUUID = chance.guid();
     const defaultHash = chance.hash();
+
+    let createStub;
 
     beforeAll(() => {
       createStub = jest.spyOn(User, "create").mockImplementation();
@@ -35,7 +36,7 @@ describe("Users", () => {
       UserPassword: chance.string({ length: 10 }),
     };
 
-    it("should register a user successfully", async () => {
+    it("should register an user successfully", async () => {
       const mockResponse = {
         ...mockRequestBody,
         UserID: defaultUUID,
@@ -52,7 +53,7 @@ describe("Users", () => {
       const parsedBody = JSON.parse(result.body);
 
       expect(result.statusCode).toBe(successStatusCode);
-      expect(parsedBody.status).toBe(successStatus);
+      expect(parsedBody.status).toBe(true);
       expect(parsedBody.data).toEqual(mockResponse);
 
       const databaseBody = createStub.mock.calls[0][0];
@@ -62,27 +63,16 @@ describe("Users", () => {
     });
 
     const requiredProperties = Object.keys(mockRequestBody);
+    const missingPropertiesTestCases =
+      generateTestCases.missingRequiredProperties(
+        requiredProperties,
+        mockRequestBody
+      );
 
-    const missingPropertyTestCases = requiredProperties.map((key) => {
-      const { [key]: ignoredValue, ...missingPropertyBody } = mockRequestBody;
-      const shouldReturnValidationError = requiredProperties.includes(key);
-
-      const expectedStatus = shouldReturnValidationError
-        ? failStatus
-        : successStatus;
-      const expectedStatusCode = shouldReturnValidationError
-        ? validationErrorStatusCode
-        : successStatusCode;
-
-      return [missingPropertyBody, expectedStatus, expectedStatusCode];
-    });
-
-    it.each(missingPropertyTestCases)(
+    it.each(missingPropertiesTestCases)(
       "should return an error if the request body is missing a required property: %p",
       async (missingPropertyBody, expectedStatus, expectedStatusCode) => {
         const event = { body: missingPropertyBody };
-
-        console.log(missingPropertyBody, expectedStatus, expectedStatusCode);
 
         const result = await registerUser(event);
         const parsedBody = JSON.parse(result.body);
@@ -110,7 +100,10 @@ describe("Users", () => {
           body: { ...mockRequestBody, ...invalidRequestProperty },
         };
         const result = await registerUser(event);
-        assertResponse(result, validationErrorStatusCode);
+        const parsedBody = JSON.parse(result.body);
+
+        expect(parsedBody.status).toBe(false);
+        expect(result.statusCode).toBe(validationErrorStatusCode);
       }
     );
   });

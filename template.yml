@@ -4,7 +4,7 @@ Transform:
 Globals:
   Function:
     CodeUri: "src/"
-    Timeout: 15
+    Timeout: 30
     Architectures:
       - arm64
     Runtime: nodejs18.x
