@@ -1,5 +1,6 @@
 import { DataSource } from "typeorm";
 import { User } from "../../../domain/entities/user.entity.mjs";
+import { DatabaseConnectionInterface } from "src/domain/interfaces/database-connection.interface.mjs";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -13,10 +14,20 @@ export const AppDataSource = new DataSource({
   logging: true,
 });
 
-export const connectDatabase = async () => {
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-    console.log("Database connected");
+export class TypeOrmDatabaseConnection implements DatabaseConnectionInterface {
+  async connect(): Promise<any> {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("Database connected");
+    }
+    return AppDataSource;
   }
-  return AppDataSource;
-};
+
+  async disconnect(): Promise<any> {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("Database connected");
+    }
+    return AppDataSource;
+  }
+}

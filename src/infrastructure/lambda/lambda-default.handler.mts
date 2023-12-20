@@ -1,23 +1,23 @@
-import { validate } from "class-validator";
-import { plainToClass } from "class-transformer";
 import { returnHandler } from "./utils/return-handler.utils.mjs";
 import { concatenateData } from "./utils/concatenate-data.utils.mjs";
 import { APIFunction } from "../../domain/types/api-function.type.mjs";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { TypeOrmDatabaseConnection } from "../db/typeorm/typeorm.connection.mjs";
+import { ClassValidatorValidationMiddleware } from "../utils/class-validator.validation-middleware.mjs";
+import { DatabaseConnectionInterface } from "../../domain/interfaces/database-connection.interface.mjs";
+import { ValidationMiddlewareInterface } from "../../domain/interfaces/validation-middleware.interface.mjs";
 
 export class LambdaDefaultHandler {
+  private dtoEntity: any;
   private handler: APIFunction;
-  private entity?: any;
-  private connectToDatabase?: () => Promise<any>;
+  private databaseConnection: DatabaseConnectionInterface;
+  private validationMiddleware: ValidationMiddlewareInterface;
 
-  constructor(
-    handler: APIFunction,
-    entity: any,
-    connectToDatabase?: () => Promise<any>
-  ) {
+  constructor(handler: APIFunction, dtoEntity?: any) {
+    this.dtoEntity = dtoEntity;
     this.handler = handler;
-    this.entity = entity;
-    this.connectToDatabase = connectToDatabase;
+    this.databaseConnection = new TypeOrmDatabaseConnection();
+    this.validationMiddleware = new ClassValidatorValidationMiddleware();
 
     this.handleAPIGatewayEvent = this.handleAPIGatewayEvent.bind(this);
   }
@@ -26,8 +26,8 @@ export class LambdaDefaultHandler {
     event: APIGatewayProxyEvent
   ): Promise<APIGatewayProxyResult> {
     try {
-      if (this.connectToDatabase) {
-        await this.connectToDatabase();
+      if (this.databaseConnection) {
+        await this.databaseConnection.connect();
       }
 
       if (event.headers?.["x-iswarmup"]) {
@@ -35,20 +35,11 @@ export class LambdaDefaultHandler {
         return returnHandler({ statusCode: 204 });
       }
 
-      const userObject: object = plainToClass(
-        this.entity,
-        concatenateData(event)
-      );
-      const errors = await validate(userObject);
+      const requestBody: typeof this.dtoEntity = concatenateData(event);
 
-      if (errors.length > 0) {
-        console.log("fala galera", JSON.stringify(errors));
-        throw new Error("Validation failed");
-      }
+      await this.validationMiddleware.validate(requestBody);
 
-      const { statusCode, body } = await this.handler(
-        userObject as typeof this.entity
-      );
+      const { statusCode, body } = await this.handler(requestBody);
 
       return returnHandler({ body, statusCode });
     } catch (error) {

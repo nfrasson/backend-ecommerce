@@ -1,11 +1,12 @@
-import { DataSource, Repository } from "typeorm";
+import { Repository } from "typeorm";
+import { AppDataSource } from "../typeorm.connection.mjs";
 import { User } from "../../../../domain/entities/user.entity.mjs";
 import { UserInterface } from "../../../../domain/interfaces/user.interface.mjs";
 
-export class UserRepository implements UserInterface {
+export class TypeOrmUserRepository implements UserInterface {
   private manager: Repository<User>;
-  constructor(dataSource: DataSource) {
-    this.manager = dataSource.getRepository(User);
+  constructor() {
+    this.manager = AppDataSource.getRepository(User);
   }
 
   async register(user: User): Promise<User> {
