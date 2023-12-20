@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    // "module": "NodeNext",
-    // "target": "ESNext",
     "module": "NodeNext",
     "target": "ES2022",
     "outDir": "./dist",
@@ -19,6 +17,10 @@
     "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": false,
     "forceConsistentCasingInFileNames": false,
-    "paths": {}
-  },
+    "paths": {
+      "@domain/*": ["src/domain/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@usecases/*": ["src/usecases/*"]
+    }
+  }
 }
