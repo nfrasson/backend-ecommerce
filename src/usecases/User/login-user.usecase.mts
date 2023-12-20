@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { UserInterface } from "../../domain/interfaces/user.interface.mjs";
+import { LoginUserDto } from "../../infrastructure/dto/User/login-user.dto.mjs";
 
 export class LoginUserUseCase {
   private userRepository: UserInterface;
@@ -8,10 +9,7 @@ export class LoginUserUseCase {
     this.userRepository = userRepository;
   }
 
-  async execute(input: {
-    userEmail: string;
-    userPassword: string;
-  }): Promise<boolean> {
+  async execute(input: LoginUserDto): Promise<boolean> {
     const user = await this.userRepository.findByEmail(input.userEmail);
 
     if (!user) {

@@ -1,5 +1,5 @@
 import { validate } from "class-validator";
-import { ValidationMiddlewareInterface } from "src/domain/interfaces/validation-middleware.interface.mjs";
+import { ValidationMiddlewareInterface } from "../../domain/interfaces/validation-middleware.interface.mjs";
 
 export class ClassValidatorValidationMiddleware implements ValidationMiddlewareInterface {
   async validate(dto: any): Promise<void> {

@@ -1,17 +1,16 @@
 import { DataSource } from "typeorm";
-import { User } from "../../../domain/entities/user.entity.mjs";
-import { DatabaseConnectionInterface } from "src/domain/interfaces/database-connection.interface.mjs";
+import { DatabaseConnectionInterface } from "../../../domain/interfaces/database-connection.interface.mjs";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
-  host: process.env.DB_PROXY_ENDPOINT,
   port: 3306,
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
+  host: process.env.DB_PROXY_ENDPOINT,
   database: "ecommerce",
-  entities: [User],
+  entities: ["../../../domain/entities/*.entity.mjs"],
+  logging: false,
   synchronize: true,
-  logging: true,
 });
 
 export class TypeOrmDatabaseConnection implements DatabaseConnectionInterface {

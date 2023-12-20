@@ -11,7 +11,7 @@ export const register: APIFunction = async (body: RegisterUserDto) => {
   const user = await registerUserUseCase.execute(body);
 
   return {
-    statusCode: 200,
+    statusCode: 201,
     body: user,
   };
 };
