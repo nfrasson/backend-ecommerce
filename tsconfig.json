@@ -11,16 +11,16 @@
     "removeComments": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
-    "strictBindCallApply": false,
-    "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictBindCallApply": false,
     "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": false,
     "forceConsistentCasingInFileNames": false,
     "paths": {
       "@domain/*": ["src/domain/*"],
-      "@infrastructure/*": ["src/infrastructure/*"],
-      "@usecases/*": ["src/usecases/*"]
+      "@usecases/*": ["src/usecases/*"],
+      "@infrastructure/*": ["src/infrastructure/*"]
     }
   }
 }

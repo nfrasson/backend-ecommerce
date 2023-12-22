@@ -2,10 +2,16 @@
   "jsc": {
     "parser": {
       "syntax": "typescript",
-      "tsx": false,
-      "decorators": true
+      "decorators": true,
+      "dynamicImport": true
     },
-    "target": "esnext",
+    "baseUrl": "./",
+    "target": "es2021",
+    "paths": {
+      "@domain/*": ["dist/domain/*"],
+      "@usecases/*": ["dist/usecases/*"],
+      "@infrastructure/*": ["dist/infrastructure/*"]
+    },
     "keepClassNames": true,
     "transform": {
       "legacyDecorator": true,
@@ -13,6 +19,6 @@
     }
   },
   "module": {
-    "type": "nodenext"
+    "type": "commonjs"
   }
 }
